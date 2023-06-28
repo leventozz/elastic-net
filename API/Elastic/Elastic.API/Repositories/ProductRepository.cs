@@ -1,5 +1,6 @@
 ﻿using Elastic.API.DTOs;
 using Elastic.API.Model;
+using Elastic.Clients.Elasticsearch;
 using Nest;
 using System.Collections.Immutable;
 
@@ -8,11 +9,13 @@ namespace Elastic.API.Repositories
     public class ProductRepository
     {
         private readonly ElasticClient _client;
+        private readonly ElasticsearchClient _newClient;
         private const string indexName = "newproducts";
 
-        public ProductRepository(ElasticClient client)
+        public ProductRepository(ElasticClient client, ElasticsearchClient newClient)
         {
             _client = client;
+            _newClient = newClient;
         }
         public async Task<Product> SaveAsync(Product newProduct)
         {
@@ -57,9 +60,23 @@ namespace Elastic.API.Repositories
             return response.IsValid;
         }
 
-        public async Task<DeleteResponse> DeleteAsync(string id)
+        public async Task<bool> UpdateNewAsync(ProductUpdateDto updateProduct)
+        {
+            var response = await _newClient.UpdateAsync<Product, ProductUpdateDto>
+                (indexName,updateProduct.Id, x=>x.Doc(updateProduct));
+
+            return response.IsSuccess();
+        }
+
+        public async Task<Nest.DeleteResponse> DeleteAsync(string id)
         {
             var response = await _client.DeleteAsync<Product>(id, x=>x.Index(indexName)); 
+            return response;
+        }
+
+        public async Task<Clients.Elasticsearch.DeleteResponse> DeleteNewAsync(string id)
+        {
+            var response = await _newClient.DeleteAsync<Product>(id, x => x.Index(indexName));
             return response;
         }
     }

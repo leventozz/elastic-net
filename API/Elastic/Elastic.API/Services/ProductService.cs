@@ -1,6 +1,7 @@
 ﻿using Elastic.API.DTOs;
 using Elastic.API.Model;
 using Elastic.API.Repositories;
+using Elastic.Clients.Elasticsearch;
 using Nest;
 using System.Collections.Immutable;
 using System.Net;
@@ -63,7 +64,7 @@ namespace Elastic.API.Services
             var deleteResponse = await _productRepository.DeleteAsync(id);
 
             if (!deleteResponse.IsValid &&
-                deleteResponse.Result is Result.NotFound)
+                deleteResponse.Result is Nest.Result.NotFound)
             {
                 return ResponseDto<bool>.Fail("product is not exist", HttpStatusCode.NotFound);
             }
@@ -71,6 +72,26 @@ namespace Elastic.API.Services
             if (!deleteResponse.IsValid)
             {
                 _logger.LogError(deleteResponse.OriginalException, deleteResponse.ServerError.Error.ToString());
+                return ResponseDto<bool>.Fail("an error occured", HttpStatusCode.InternalServerError);
+            }
+
+            return ResponseDto<bool>.Success(true, HttpStatusCode.OK);
+        }
+
+        public async Task<ResponseDto<bool>> DeleteNewAsync(string id)
+        {
+            var deleteResponse = await _productRepository.DeleteNewAsync(id);
+
+            if (!deleteResponse.IsValidResponse &&
+                deleteResponse.Result is Clients.Elasticsearch.Result.NotFound)
+            {
+                return ResponseDto<bool>.Fail("product is not exist", HttpStatusCode.NotFound);
+            }
+
+            if (!deleteResponse.IsValidResponse)
+            {
+                deleteResponse.TryGetOriginalException(out Exception ex);
+                _logger.LogError(ex, deleteResponse.ElasticsearchServerError.Error.ToString());
                 return ResponseDto<bool>.Fail("an error occured", HttpStatusCode.InternalServerError);
             }
 
