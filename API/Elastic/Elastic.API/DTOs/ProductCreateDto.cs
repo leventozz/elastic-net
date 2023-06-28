@@ -13,7 +13,7 @@ namespace Elastic.API.DTOs
                 Stock = Stock,
                 Feature = new ProductFeature()
                 {
-                    Color = Feature.Color,
+                    Color = (EColor)int.Parse(Feature.Color),
                     Width = Feature.Width,
                     Height = Feature.Height
                 }

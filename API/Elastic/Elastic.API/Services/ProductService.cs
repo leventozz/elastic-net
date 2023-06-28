@@ -1,4 +1,5 @@
 ﻿using Elastic.API.DTOs;
+using Elastic.API.Model;
 using Elastic.API.Repositories;
 using System.Collections.Immutable;
 using System.Net;
@@ -18,8 +19,8 @@ namespace Elastic.API.Services
         {
             var response = await _productRepository.SaveAsync(request.CreateProduct());
 
-            if (response == null)
-                return ResponseDto<ProductDto>.Fail(new List<string> { "exception occured" }, HttpStatusCode.InternalServerError);
+            if (response is null)
+                return ResponseDto<ProductDto>.Fail("an exception occured", HttpStatusCode.InternalServerError);
 
             return ResponseDto<ProductDto>.Success(response.CreateDto(), HttpStatusCode.Created);
         }
@@ -29,9 +30,19 @@ namespace Elastic.API.Services
             var products = await _productRepository.GetAllAsync();
 
             var productListDto = products.Select(x => new ProductDto(x.Id, x.Name, x.Price, x.Stock, 
-                new ProductFeatureDto(x.Feature.Width, x.Feature.Height, x.Feature.Color))).ToList();
+                new ProductFeatureDto(x.Feature.Width, x.Feature.Height, x.Feature.Color.ToString()))).ToList();
 
             return ResponseDto<List<ProductDto>>.Success(productListDto, HttpStatusCode.OK);
+        }
+
+        public async Task<ResponseDto<ProductDto>> GetByIdAsync(string id)
+        {
+            var product = await _productRepository.GetByIdAsync(id);
+
+            if(product is null)
+                return ResponseDto<ProductDto>.Fail("an exception occured", HttpStatusCode.NotFound);
+
+            return ResponseDto<ProductDto>.Success(product.CreateDto(), HttpStatusCode.OK);
         }
     }
 }
