@@ -57,10 +57,10 @@ namespace Elastic.API.Repositories
             return response.IsValid;
         }
 
-        public async Task<bool> DeleteAsync(string id)
+        public async Task<DeleteResponse> DeleteAsync(string id)
         {
             var response = await _client.DeleteAsync<Product>(id, x=>x.Index(indexName)); 
-            return response.IsValid;
+            return response;
         }
     }
 }

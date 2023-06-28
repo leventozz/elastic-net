@@ -1,6 +1,7 @@
 ﻿using Elastic.API.DTOs;
 using Elastic.API.Model;
 using Elastic.API.Repositories;
+using Nest;
 using System.Collections.Immutable;
 using System.Net;
 
@@ -9,10 +10,12 @@ namespace Elastic.API.Services
     public class ProductService
     {
         private readonly ProductRepository _productRepository;
+        private readonly ILogger<ProductService> _logger;
 
-        public ProductService(ProductRepository productRepository)
+        public ProductService(ProductRepository productRepository, ILogger<ProductService> logger)
         {
             _productRepository = productRepository;
+            _logger = logger;
         }
 
         public async Task<ResponseDto<ProductDto>> SaveAsync(ProductCreateDto request)
@@ -57,10 +60,19 @@ namespace Elastic.API.Services
 
         public async Task<ResponseDto<bool>> DeleteAsync(string id)
         {
-            var result = await _productRepository.DeleteAsync(id);
+            var deleteResponse = await _productRepository.DeleteAsync(id);
 
-            if (result is false)
-                return ResponseDto<bool>.Fail("an exception occured", HttpStatusCode.NotFound);
+            if (!deleteResponse.IsValid &&
+                deleteResponse.Result is Result.NotFound)
+            {
+                return ResponseDto<bool>.Fail("product is not exist", HttpStatusCode.NotFound);
+            }
+
+            if (!deleteResponse.IsValid)
+            {
+                _logger.LogError(deleteResponse.OriginalException, deleteResponse.ServerError.Error.ToString());
+                return ResponseDto<bool>.Fail("an error occured", HttpStatusCode.InternalServerError);
+            }
 
             return ResponseDto<bool>.Success(true, HttpStatusCode.OK);
         }
