@@ -29,7 +29,7 @@ namespace Elastic.API.Services
         {
             var products = await _productRepository.GetAllAsync();
 
-            var productListDto = products.Select(x => new ProductDto(x.Id, x.Name, x.Price, x.Stock, 
+            var productListDto = products.Select(x => new ProductDto(x.Id, x.Name, x.Price, x.Stock,
                 new ProductFeatureDto(x.Feature.Width, x.Feature.Height, x.Feature.Color.ToString()))).ToList();
 
             return ResponseDto<List<ProductDto>>.Success(productListDto, HttpStatusCode.OK);
@@ -39,10 +39,30 @@ namespace Elastic.API.Services
         {
             var product = await _productRepository.GetByIdAsync(id);
 
-            if(product is null)
+            if (product is null)
                 return ResponseDto<ProductDto>.Fail("an exception occured", HttpStatusCode.NotFound);
 
             return ResponseDto<ProductDto>.Success(product.CreateDto(), HttpStatusCode.OK);
+        }
+
+        public async Task<ResponseDto<bool>> UpdateAsync(ProductUpdateDto updateProduct)
+        {
+            var result = await _productRepository.UpdateAsync(updateProduct);
+
+            if(result is false)
+                return ResponseDto<bool>.Fail("an exception occured", HttpStatusCode.NotFound);
+
+            return ResponseDto<bool>.Success(true, HttpStatusCode.OK);
+        }
+
+        public async Task<ResponseDto<bool>> DeleteAsync(string id)
+        {
+            var result = await _productRepository.DeleteAsync(id);
+
+            if (result is false)
+                return ResponseDto<bool>.Fail("an exception occured", HttpStatusCode.NotFound);
+
+            return ResponseDto<bool>.Success(true, HttpStatusCode.OK);
         }
     }
 }

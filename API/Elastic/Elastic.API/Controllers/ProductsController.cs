@@ -15,9 +15,21 @@ namespace Elastic.API.Controllers
         }
 
         [HttpPost("SaveProduct")]
-        public async Task<IActionResult> Save(ProductCreateDto request)
+        public async Task<IActionResult> SaveProduct(ProductCreateDto request)
         {
             return CreateActionResult(await _productService.SaveAsync(request));
+        }
+
+        [HttpPut("UpdateProduct")]
+        public async Task<IActionResult> UpdateProduct(ProductUpdateDto request)
+        {
+            return CreateActionResult(await _productService.UpdateAsync(request));
+        }
+
+        [HttpDelete("DeleteProduct")]
+        public async Task<IActionResult> DeleteProduct(string id)
+        {
+            return CreateActionResult(await _productService.DeleteAsync(id));
         }
 
         [HttpGet("GetAllProducts")]
