@@ -19,7 +19,7 @@ namespace Elastic.WEB.Services
             newBlog.Title = blogCreateViewModel.Title;
             newBlog.Content = blogCreateViewModel.Content;
             newBlog.UserId = Guid.NewGuid();
-            newBlog.Tags = blogCreateViewModel.Tags.ToArray();
+            newBlog.Tags = blogCreateViewModel.Tags.Split(',');
 
             var created = await _blogRepository.SaveAsync(newBlog);
             return created != null;
