@@ -42,22 +42,21 @@ namespace Elastic.WEB.Repositories
 				.Field(f => f.Title)
 				.Query(searchText));
 
-            if (string.IsNullOrEmpty(searchText))
+            Action<QueryDescriptor<Blog>> tagTerm = (q) => q.Term(t => t.Field(f => f.Tags).Value(searchText));
+
+			if (string.IsNullOrEmpty(searchText))
                 listQuery.Add(matchAll);
             else
             { 
                 listQuery.Add(matchContent); 
                 listQuery.Add(titleMatchBoolPrefix); 
+                listQuery.Add(tagTerm); 
             }
 
 
             var result = await _elasticClient.SearchAsync<Blog>(s => s.Index(indexName)
                 .Size(1000).Query(q => q.Bool(b => b
-                    .Should(s => s.Match(m => m.Field(f => f.Content)
-                        .Query(searchText))
-                            ,s=>s.MatchBoolPrefix(p=>p
-                            .Field(f=>f.Title)
-                            .Query(searchText))))));
+                    .Should(listQuery.ToArray()))));
                 
             foreach (var hit in result.Hits)
             {
