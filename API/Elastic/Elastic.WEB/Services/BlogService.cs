@@ -24,5 +24,10 @@ namespace Elastic.WEB.Services
             var created = await _blogRepository.SaveAsync(newBlog);
             return created != null;
         }
+
+        public async Task<List<Blog>> SearchAsync(string searchText)
+        {
+            return await _blogRepository.SearchAsync(searchText);
+        }
     }
 }
