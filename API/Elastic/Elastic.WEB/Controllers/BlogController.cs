@@ -13,7 +13,18 @@ namespace Elastic.WEB.Controllers
             _blogService = blogService;
         }
 
-        public IActionResult Save()
+        public async Task<IActionResult> Search()
+        {
+			return View(await _blogService.SearchAsync(string.Empty));
+		}
+		[HttpPost]
+		public async Task<IActionResult> Search(string searchText)
+		{
+            var blogList = await _blogService.SearchAsync(searchText);
+			return View(blogList);
+		}
+
+		public IActionResult Save()
         {
             return View();
         }

@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Elastic.WEB.ViewModels
 {
-    public class BlogCreateViewModel
+	public class BlogCreateViewModel
     {
         [Display(Name = "Blog Title")]
         public string Title { get; set; } = null!;
